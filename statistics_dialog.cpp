@@ -1,22 +1,54 @@
+/***************************************************************************
+**                                                                        **
+**  This file is part of the program 'Launcher'.                          **
+**  Copyright (C) 2013 Maxime Bellier                                     **
+**                                                                        **
+**  This program is free software: you can redistribute it and/or modify  **
+**  it under the terms of the GNU General Public License as published by  **
+**  the Free Software Foundation, either version 3 of the License, or     **
+**  (at your option) any later version.                                   **
+**                                                                        **
+**  This program is distributed in the hope that it will be useful,       **
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of        **
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         **
+**  GNU General Public License for more details.                          **
+**                                                                        **
+**  You should have received a copy of the GNU General Public License     **
+**  along with this program.  If not, see http://www.gnu.org/licenses/.   **
+**                                                                        **
+****************************************************************************
+**           Author: Maxime Bellier                                       **
+**  Website/Contact: http://puissance.m4x.free.fr                         **
+**             Date: 05.2013                                           **
+****************************************************************************/
+
 #include "statistics_dialog.h"
 #include "ui_statistics_dialog.h"
 
 #include <string.h>
-#include <iostream>
+
 using namespace std;
 
-StatisticsDialog::StatisticsDialog(Statistics &stats, QWidget *parent) :
-  QDialog(parent),
+StatisticsDialog::StatisticsDialog(Statistics &stats,
+                                   QWidget *parent) :
+  QDialog(parent, Qt::CustomizeWindowHint),
   ui(new Ui::StatisticsDialog),
   m_stats(stats)
 {
+  this->setWindowFlags(Qt::WindowCloseButtonHint & Qt::WindowMaximizeButtonHint );
   ui->setupUi(this);
 
+  // sort statistics
   stats.sort();
 
-  // set locale to english, so we get english month names:
-  ui->customPlot->setLocale(QLocale(QLocale::English, QLocale::UnitedKingdom));
-  // seconds of current time, we'll use it as starting point in time for data:
+  // set pens color
+  pen.setColor(QColor(0, 0, 255, 100));
+  selectedPen.setColor(QColor(255, 0, 0, 255));
+
+  // set locale to english for month names:
+  ui->customPlot->setLocale(QLocale(QLocale::English,
+                                    QLocale::UnitedKingdom));
+  // current time in seconds
   double now = QDateTime::currentDateTime().toTime_t();
 
   int gi = 0;
@@ -30,8 +62,6 @@ StatisticsDialog::StatisticsDialog(Statistics &stats, QWidget *parent) :
     // new graph per element
     ui->customPlot->addGraph();
     ui->customPlot->graph()->setName(QString::fromStdString(e.name()));
-    QPen pen;
-    pen.setColor(QColor(0, 0, 255, 200));
     ui->customPlot->graph()->setLineStyle(QCPGraph::lsLine);
     ui->customPlot->graph()->setPen(pen);
     ui->customPlot->graph()->setBrush(QBrush(QColor(255 / stats.nbElements() * gi,
@@ -40,7 +70,7 @@ StatisticsDialog::StatisticsDialog(Statistics &stats, QWidget *parent) :
                                                     150)));
     gi++;
 
-    // get dates
+    // get values, filtered by days
     QVector<double> time, value;
     int i = 0;
     for (ElementIterator data = e.begin(); data != e.end(); data++){
@@ -55,12 +85,16 @@ StatisticsDialog::StatisticsDialog(Statistics &stats, QWidget *parent) :
         time.append(t-1);
         value.append(0);
         time.append(t);
-        value.append(1);
+        value.append(0);
       }
       if (time.size() > 0){
         if (time.back() < t){
-          time.append(t-1);
+          time.append(time.last()+ 3600*24-100);
           value.append(value.last());
+          time.append(time.last()+1);
+          value.append(0);
+          time.append(t-1);
+          value.append(0);
           time.append(t);
           value.append(1);
         }else{
@@ -72,7 +106,8 @@ StatisticsDialog::StatisticsDialog(Statistics &stats, QWidget *parent) :
       if (maxValue < value.last()) maxValue = value.last();
       i++;
     }
-
+    time.append(time.last()+1);
+    value.append(0);
     ui->customPlot->graph()->setData(time, value);
   }
 
@@ -88,11 +123,14 @@ StatisticsDialog::StatisticsDialog(Statistics &stats, QWidget *parent) :
   // set a fixed tick-step to one tick per month:
   ui->customPlot->xAxis->setAutoTickStep(false);
   ui->customPlot->xAxis->setTickStep(2628000); // one month in seconds
-  ui->customPlot->xAxis->setSubTickCount(3);
+  ui->customPlot->xAxis->setSubTickCount(4);
 
   // apply auto tick and tick label for left axis:
-  ui->customPlot->yAxis->setAutoTicks(true);
+//  ui->customPlot->yAxis->setAutoTicks(true);
   ui->customPlot->yAxis->setAutoTickLabels(true);
+  ui->customPlot->yAxis->setAutoTickStep(false);
+  ui->customPlot->yAxis->setTickStep(1);
+  ui->customPlot->yAxis->setSubTickCount(1);
 
 
   // set axis labels:
@@ -112,16 +150,15 @@ StatisticsDialog::StatisticsDialog(Statistics &stats, QWidget *parent) :
   ui->customPlot->yAxis->setRange(0, maxValue);
 
 
-  // activate legend and position it in top left corner:
+  // activate legend
   ui->customPlot->legend->setVisible(true);
   ui->customPlot->legend->setPositionStyle(QCPLegend::psTopRight);
   ui->customPlot->legend->setPositionStyle(QCPLegend::psManual);
   ui->customPlot->legend->setAutoSize(false);
-  ui->customPlot->legend->setSize(160,ui->customPlot->size().height());
-  ui->customPlot->legend->setPosition(QPoint(ui->customPlot->width() - ui->customPlot->legend->size().width(),0));
   ui->customPlot->setAutoMargin(false);
-  ui->customPlot->setMargin(40,ui->customPlot->legend->size().width(),0,40);
+  ui->customPlot->setMargin(40,160,0,40);
 
+  // legend items are selectable
   QPen pen;
   pen.setColor(QColor(0, 0, 255, 200));
   ui->customPlot->legend->setSelectable(ui->customPlot->legend->spItems);
@@ -143,23 +180,38 @@ StatisticsDialog::~StatisticsDialog()
   delete ui;
 }
 
-void StatisticsDialog::legendClicked(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event)
+void StatisticsDialog::resizeEvent(QResizeEvent *)
 {
-  cerr << "click!" << endl;
+  // move legend
+  ui->customPlot->legend->setSize(160, ui->customPlot->size().height());
+  ui->customPlot->legend->setPosition(QPoint(ui->customPlot->width() - 160,0));
+  ui->customPlot->replot();
+}
 
+
+void StatisticsDialog::legendClicked(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *)
+{
   for (int k = 0; k < ui->customPlot->graphCount(); k++){
     if (legend->itemWithPlottable(ui->customPlot->graph(k)) == (QCPPlottableLegendItem*)item){
-      QPen pen;
-      pen.setColor(QColor(255, 0, 0, 255));
-      pen.setWidth(2);
-      ui->customPlot->graph(k)->setPen(pen);
+      // selected
+      ui->customPlot->graph(k)->setPen(selectedPen);
+      ui->customPlot->addLayer("top");
+      ui->customPlot->graph(k)->setLayer("top");
+      QColor color(ui->customPlot->graph(k)->brush().color());
+      color.setAlpha(255);
+      ui->customPlot->graph(k)->setBrush(QBrush(color));
     }else{
-      QPen pen;
-      pen.setColor(QColor(0, 0, 255, 200));
-      pen.setWidth(1);
+      // unselected
       ui->customPlot->graph(k)->setPen(pen);
-
+      QColor color(ui->customPlot->graph(k)->brush().color());
+      color.setAlpha(150);
+      ui->customPlot->graph(k)->setBrush(QBrush(color));
     }
   }
 
+}
+
+void StatisticsDialog::on_buttonBox_2_clicked(QAbstractButton *)
+{
+    this->close();
 }

@@ -19,44 +19,68 @@
 ****************************************************************************
 **           Author: Maxime Bellier                                       **
 **  Website/Contact: http://puissance.m4x.free.fr                         **
-**             Date: 05.2013                                              **
+**             Date: 05.2013                                            **
 ****************************************************************************/
 
-#ifndef STATISTICS_DIALOG_H
-#define STATISTICS_DIALOG_H
+#include "settings.h"
+#include "ui_settings.h"
 
-#include <QDialog>
-#include "statistics.h"
-#include "qcustomplot.h"
-#include <QMouseEvent>
-#include <QAbstractButton>
+#include <QSettings>
 
-namespace Ui {
-class StatisticsDialog;
+Settings::Settings(const QString &settingsFile, QWidget *parent):
+  QDialog(parent, Qt::WindowCloseButtonHint),
+  ui(new Ui::Settings),
+  m_settingsFile(settingsFile)
+{
+  ui->setupUi(this);
+  loadSettings();
 }
 
-class StatisticsDialog : public QDialog
+Settings::~Settings()
 {
-  Q_OBJECT
-  
-public:
-  explicit StatisticsDialog(Statistics &stats, QWidget *parent = 0);
-  ~StatisticsDialog();
-  void resizeEvent (QResizeEvent *);
+  saveSettings();
+  delete ui;
+}
 
-public slots:
-  void legendClicked (QCPLegend *legend,
-                      QCPAbstractLegendItem *item,
-                      QMouseEvent * );
+void Settings::loadSettings()
+{
+  QSettings settings(m_settingsFile,QSettings::IniFormat);
+  m_settingSorted = settings.value("sorted", false).toBool();
+  m_settingMaxColumnSize = settings.value("maxColumnSize", 8).toUInt();
 
-private slots:
-  void on_buttonBox_2_clicked(QAbstractButton *);
+  // update ui
+  if (ui->optionSortedTrue && m_settingSorted)
+    ui->optionSortedTrue->toggle();
+  if (ui->sliderWidth)
+    ui->sliderWidth->setValue(m_settingMaxColumnSize);
+}
 
-private:
-  Ui::StatisticsDialog *ui;
-  Statistics &m_stats;
-  QPen pen;
-  QPen selectedPen;
-};
+void Settings::saveSettings()
+{
+  QSettings settings(m_settingsFile,QSettings::IniFormat);
+  settings.setValue("sorted", m_settingSorted);
+  settings.setValue("maxColumnSize", m_settingMaxColumnSize);
+}
 
-#endif // STATISTICS_DIALOG_H
+bool Settings::settingSorted() const
+{
+  return m_settingSorted;
+}
+
+unsigned int Settings::settingMaxColumnSize() const
+{
+  return m_settingMaxColumnSize;
+}
+
+
+void Settings::on_optionSortedTrue_toggled(bool checked)
+{
+  m_settingSorted = checked;
+}
+
+void Settings::on_sliderWidth_valueChanged(int value)
+{
+  m_settingMaxColumnSize = value;
+  if (ui->labelWidth)
+    ui->labelWidth->setText(QString::number(m_settingMaxColumnSize));
+}

@@ -22,41 +22,67 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-#ifndef STATISTICS_DIALOG_H
-#define STATISTICS_DIALOG_H
+#ifndef LAUNCHER_H_
+#define LAUNCHER_H_
 
-#include <QDialog>
+#include "link.h"
 #include "statistics.h"
-#include "qcustomplot.h"
-#include <QMouseEvent>
-#include <QAbstractButton>
+#include "statistics_dialog.h"
+#include "settings.h"
 
-namespace Ui {
-class StatisticsDialog;
-}
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QButtonGroup>
+#include <QIcon>
+#include <QDir>
+#include <QFocusEvent>
 
-class StatisticsDialog : public QDialog
-{
+#include <vector>
+
+class Launcher : public QWidget {
   Q_OBJECT
-  
 public:
-  explicit StatisticsDialog(Statistics &stats, QWidget *parent = 0);
-  ~StatisticsDialog();
-  void resizeEvent (QResizeEvent *);
+  Launcher                 (Statistics &m_stats,
+                            StatisticsDialog &m_statDialog,
+                            Settings &settings);
+  ~Launcher();
+  void  setLaunchButton    (QPushButton &button,
+                            QString &name,
+                            QIcon &icon) const;
+  int   getTaskbarPosition ();
+  void  setPosition        ();
+  void  contextMenuEvent   (QContextMenuEvent *event);
+  int   getButtonIdFromPos (const QPoint &pos);
+  Link *launchButton       (QPushButton &button,
+                            const QString &filePath) const;
+  void  allowFocusLoss     (bool value);
 
 public slots:
-  void legendClicked (QCPLegend *legend,
-                      QCPAbstractLegendItem *item,
-                      QMouseEvent * );
-
-private slots:
-  void on_buttonBox_2_clicked(QAbstractButton *);
+  void openFileLocation ();
+  void openLinksFolder  ();
+  void openStatistics   ();
+  void openSettings     ();
+  void rename           ();
+  void click            (int);
+  void focusOutEvent    (QFocusEvent *event);
+  void keyPressEvent    (QKeyEvent *event);
 
 private:
-  Ui::StatisticsDialog *ui;
-  Statistics &m_stats;
-  QPen pen;
-  QPen selectedPen;
+  QButtonGroup *      m_buttons;
+  QString             m_path;
+  bool                m_quitIfNoFocus;
+  unsigned int        m_buttonWidth;
+  unsigned int        m_buttonHeight;
+  unsigned int        m_columnSize;
+  unsigned int        m_maxColumnSize;
+  unsigned int        m_rowSize;
+  int                 m_contextMenuButtonId;
+  std::vector<Link *> m_links;
+  QDir *              m_dir;
+  Statistics &        m_stats;
+  StatisticsDialog &  m_statDialog;
+  Settings &          m_settings;
 };
 
-#endif // STATISTICS_DIALOG_H
+#endif // LAUNCHER_H_

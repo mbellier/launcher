@@ -22,41 +22,39 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-#ifndef STATISTICS_DIALOG_H
-#define STATISTICS_DIALOG_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 #include <QDialog>
-#include "statistics.h"
-#include "qcustomplot.h"
-#include <QMouseEvent>
+#include <QString>
 #include <QAbstractButton>
 
 namespace Ui {
-class StatisticsDialog;
+class Settings;
 }
 
-class StatisticsDialog : public QDialog
+class Settings : public QDialog
 {
   Q_OBJECT
   
 public:
-  explicit StatisticsDialog(Statistics &stats, QWidget *parent = 0);
-  ~StatisticsDialog();
-  void resizeEvent (QResizeEvent *);
-
-public slots:
-  void legendClicked (QCPLegend *legend,
-                      QCPAbstractLegendItem *item,
-                      QMouseEvent * );
+  Settings(const QString &settingsFile,
+           QWidget *parent = 0);
+  ~Settings();
+  void loadSettings();
+  void saveSettings();
+  bool settingSorted() const;
+  unsigned int settingMaxColumnSize() const;
 
 private slots:
-  void on_buttonBox_2_clicked(QAbstractButton *);
+  void on_optionSortedTrue_toggled(bool checked);
+  void on_sliderWidth_valueChanged(int value);
 
 private:
-  Ui::StatisticsDialog *ui;
-  Statistics &m_stats;
-  QPen pen;
-  QPen selectedPen;
+  Ui::Settings *ui;
+  QString m_settingsFile;
+  bool m_settingSorted;
+  unsigned int m_settingMaxColumnSize;
 };
 
-#endif // STATISTICS_DIALOG_H
+#endif // SETTINGS_H

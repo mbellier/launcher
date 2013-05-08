@@ -8,22 +8,24 @@ QML_IMPORT_PATH =
 
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
-    window.cpp \
     statistics.cpp \
     database.cpp \
     link.cpp \
     element.cpp \
     statistics_dialog.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    launcher.cpp \
+    settings.cpp
 
 HEADERS += \
-    window.h \
     statistics.h \
     database.h \
     link.h \
     element.h \
     statistics_dialog.h \
-    qcustomplot.h
+    qcustomplot.h \
+    launcher.h \
+    settings.h
 
 RESOURCES += \
     txt.qrc
@@ -35,4 +37,5 @@ OTHER_FILES += \
 RC_FILE = launcher.rc
 
 FORMS += \
-    statistics_dialog.ui
+    statistics_dialog.ui \
+    settings.ui
