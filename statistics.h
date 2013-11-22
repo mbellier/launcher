@@ -30,6 +30,12 @@
 #include <string>
 #include <iostream>
 
+/*!
+ * \brief The Statistics class
+ *
+ * Manages files of statistics, by timestamping the launches.
+ *
+ */
 class Statistics {
 public:
     Statistics();

@@ -30,6 +30,10 @@
 
 typedef std::vector<std::string>::iterator ElementIterator;
 
+/*!
+ * \brief Element of a string "Database"
+ * Named element containging an array of string values.
+ */
 class Element {
 public:
     Element();

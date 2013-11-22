@@ -22,6 +22,15 @@
 **             Date: 05.2013                                           **
 ****************************************************************************/
 
+/*!
+ * \file statistics_dialog.cpp
+ * \brief Statistics window
+ * \author Maxime Bellier
+ * \version 0.2
+ * \date 05.2013
+ * \copyright This project is released under the GNU Public License.
+ */
+
 #include "statistics_dialog.h"
 #include "ui_statistics_dialog.h"
 

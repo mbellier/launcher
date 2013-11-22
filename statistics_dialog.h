@@ -35,6 +35,12 @@ namespace Ui {
 class StatisticsDialog;
 }
 
+/*!
+ * \brief Statistics window
+ *
+ * Displays the statistics in a plot.
+ *
+ */
 class StatisticsDialog : public QDialog
 {
   Q_OBJECT

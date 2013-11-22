@@ -63,7 +63,7 @@ class QCPAxis;
 class QCPData;
 
 /*!
-  The QCP Namespace contains general enums and QFlags 
+ \brief The QCP Namespace contains general enums and QFlags
 */
 namespace QCP
 {

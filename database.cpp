@@ -22,17 +22,13 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-/**
+/*!
  * \file database.cpp
- * \brief Database manager
+ * \brief String database
  * \author Maxime Bellier
  * \version 0.2
  * \date 05.2013
- * \license{This project is released under the GNU Public License.}
- *
- * Provides accessors to an array of "Entry"s and
- * IO methods for file storing.
- *
+ * \copyright This project is released under the GNU Public License.
  */
 
 #include "database.h"

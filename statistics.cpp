@@ -22,16 +22,13 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-/**
+/*!
  * \file statistics.cpp
  * \brief Statistics manager
  * \author Maxime Bellier
  * \version 0.2
  * \date 05.2013
- * \license{This project is released under the GNU Public License.}
- *
- * Manages files of statistics.
- *
+ * \copyright This project is released under the GNU Public License.
  */
 
 #include "statistics.h"

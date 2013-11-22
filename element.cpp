@@ -22,16 +22,13 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-/**
+/*!
  * \file element.cpp
- * \brief Element of a "Database" of strings
+ * \brief Element of a string "Database"
  * \author Maxime Bellier
  * \version 0.2
  * \date 05.2013
- * \license{This project is released under the GNU Public License.}
- *
- * Named element containging an array of string values.
- *
+ * \copyright This project is released under the GNU Public License.
  */
 
 #include "element.h"

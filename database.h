@@ -31,6 +31,13 @@
 
 typedef std::vector<Element>::iterator DatabaseIterator;
 
+/*!
+ * \brief String database
+ *
+ * Provides accessors to an array of "Entry"s and
+ * IO methods for file storing.
+ *
+ */
 class Database {
 public:
     Database();

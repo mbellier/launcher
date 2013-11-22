@@ -1,4 +1,4 @@
-/***************************************************************************
+/* **************************************************************************
 **                                                                        **
 **  This file is part of the program 'Launcher'.                          **
 **  Copyright (C) 2013 Maxime Bellier                                     **
@@ -40,11 +40,16 @@
 
 #include <vector>
 
+/*!
+ * \brief Launcher window
+ * Main window displaying the grid of buttons.
+ *
+ */
 class Launcher : public QWidget {
   Q_OBJECT
 public:
-  Launcher                 (Statistics &m_stats,
-                            StatisticsDialog &m_statDialog,
+  Launcher                 (Statistics &stats,
+                            StatisticsDialog &statDialog,
                             Settings &settings);
   ~Launcher();
   void  setLaunchButton    (QPushButton &button,

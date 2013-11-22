@@ -22,15 +22,27 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-/**
+/*! \mainpage Launcher
+ * This application uses few classes to manage Windows links and display them in a grid of buttons.
+ * A database is used to store some statistics about the number of launches.
+ * These statistics can be plotted thanks to the QCustomPlot widget by Emanuel Eichhammer from <http://www.WorksLikeClockwork.com/>.
+ *
+ * All the works are released under the GNU Public License.
+ *
+ * For further information, see http://puissance.m4x.free.fr/ (in French).
+ *
+ * Maxime Bellier <<maxime.bellier@gmx.fr>>.
+ */
+
+/*!
  * \file main.cpp
- * \brief Main
+ * \brief Application entry point.
  * \author Maxime Bellier
  * \version 0.2
  * \date 05.2013
- * \license{This project is released under the GNU Public License.}
+ * \copyright This project is released under the GNU Public License.
  *
- * Application initialisation.
+ * Initialises statistics and windows.
  *
  */
 

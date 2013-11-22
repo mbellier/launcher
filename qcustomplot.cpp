@@ -22,7 +22,7 @@
 **             Date: 09.06.12                                             **
 ****************************************************************************/
 
-/*! \mainpage %QCustomPlot Documentation
+/*! \page %QCustomPlot QCustomPlot documentation
  
   Below is a brief overview of and guide to the classes and their relations. If you are new to
   QCustomPlot and just want to start using it, it's recommended to look at the examples/tutorials
@@ -167,12 +167,6 @@
   transferred. (Relevant only if preparing data maps with a large number of points, i.e. over 10000)
 */
 
-/*! \page classoverview Class Overview
-  
-  \image latex ClassesOverview.png "Overview of all classes and their relations" width=1.2\textwidth
-  \image html ClassesOverview.png "Overview of all classes and their relations"
-  
-*/
 
 #include "qcustomplot.h"
 

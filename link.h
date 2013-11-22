@@ -28,6 +28,12 @@
 #include <QString>
 #include <QIcon>
 
+/*!
+ * \brief The Link class
+ *
+ * Contains parsed informations from a link file.
+ *
+ */
 class Link {
 public:
     Link();

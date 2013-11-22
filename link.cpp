@@ -22,16 +22,13 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-/**
+/*!
  * \file link.cpp
  * \brief Link object
  * \author Maxime Bellier
  * \version 0.2
  * \date 05.2013
- * \license{This project is released under the GNU Public License.}
- *
- * Contains parsed informations from a link file.
- *
+ * \copyright This project is released under the GNU Public License.
  */
 
 #include "link.h"

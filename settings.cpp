@@ -22,6 +22,15 @@
 **             Date: 05.2013                                            **
 ****************************************************************************/
 
+/*!
+ * \file settings.cpp
+ * \brief Settings window
+ * \author Maxime Bellier
+ * \version 0.2
+ * \date 05.2013
+ * \copyright This project is released under the GNU Public License.
+ */
+
 #include "settings.h"
 #include "ui_settings.h"
 

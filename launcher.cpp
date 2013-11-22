@@ -22,16 +22,13 @@
 **             Date: 05.2013                                              **
 ****************************************************************************/
 
-/**
- * \file window.cpp
- * \brief Main window
+/*!
+ * \file launcher.cpp
+ * \brief Launcher window
  * \author Maxime Bellier
  * \version 0.2
  * \date 05.2013
- * \license{This project is released under the GNU Public License.}
- *
- * Main window displaying the grid of buttons.
- *
+ * \copyright This project is released under the GNU Public License.
  */
 
 
@@ -57,27 +54,38 @@
 
 using namespace std;
 
+/*! \struct ButtonStats
+ * \brief Structure used to sort the buttons by the number of launches.
+ */
 typedef struct {
   unsigned int button;
   unsigned int stats;
 } ButtonStats;
 
-
+/*! \brief Button sorting function
+ * \param a Button
+ * \param b Button
+ * \return A boolean set to True if button 'a' stats are greater than 'b'.
+ */
 static bool sortButtonsFunc(const ButtonStats &a,
                             const ButtonStats &b){
   return a.stats > b.stats;
 }
 
-
+/*! \brief Launcher contructor
+ * \param stats A Statistics object
+ * \param statDialog Statistics dialog window
+ * \param settings Settings dialog window
+ */
 Launcher::Launcher(Statistics &stats,
-                   StatisticsDialog &m_statDialog,
+                   StatisticsDialog &statDialog,
                    Settings &settings)
   : QWidget(),
     m_buttonWidth(150),
     m_buttonHeight(60),
     m_contextMenuButtonId(-1),
     m_stats(stats),
-    m_statDialog(m_statDialog),
+    m_statDialog(statDialog),
     m_settings(settings)
 {
   m_maxColumnSize = m_settings.settingMaxColumnSize();
@@ -123,8 +131,17 @@ Launcher::Launcher(Statistics &stats,
     button_stats.push_back(bstats);
   }
 
-  if (m_settings.settingSorted())
+  // button sorting
+  if (m_settings.settingSorted()){
     sort(button_stats.begin(), button_stats.end(), sortButtonsFunc);
+    // TODO This is a quick fix - better make a class for launchButtons !
+    std::vector<Link *> tmp;
+    for (unsigned int k = 0; k < m_links.size(); k++){
+      unsigned int sorted_index = button_stats[k].button;
+      tmp.push_back(m_links[sorted_index]);
+    }
+    m_links = tmp;
+  }
 
   // position buttons
   unsigned int i = 0, j = 0;
@@ -155,18 +172,20 @@ Launcher::Launcher(Statistics &stats,
   allowFocusLoss(false);
 }
 
-
+/*! \brief Launcher destructor
+ * Saves statistics before quit
+ */
 Launcher::~Launcher()
 {
    m_stats.save();
 }
 
-/* Taskbar position :
- *  1 = vertical left,
- *  2 = horizontal up,
- *  3 = vertical right,
- *  0 = horizontal down,
- * -1 = unknown
+/*! \brief Returns the position of the windows taskbar.
+ * \return 1 = vertical left,
+ * \return 2 = horizontal up,
+ * \return 3 = vertical right,
+ * \return 0 = horizontal down,
+ * \return -1 = unknown.
  */
 int Launcher::getTaskbarPosition()
 {
@@ -185,7 +204,7 @@ int Launcher::getTaskbarPosition()
   return -1;
 }
 
-
+/*! \brief Sets the position of the launcher window, using the taskbar position. */
 void Launcher::setPosition()
 {
   int taskbarPosition = getTaskbarPosition();
@@ -230,6 +249,9 @@ void Launcher::setPosition()
   this->move(px, py);
 }
 
+/*! \brief Button click event
+ * \param id Refers to the clicked button
+ */
 void Launcher::click(int id)
 {
   m_stats.addToken(m_buttons->button(id)->text().toStdString());
@@ -238,6 +260,9 @@ void Launcher::click(int id)
   this->close();
 }
 
+/*! \brief Used to (dis)allow focus loss of the launcher window
+ * \param value
+*/
 void Launcher::allowFocusLoss(bool value)
 {
   m_quitIfNoFocus = !value;
@@ -247,6 +272,11 @@ void Launcher::allowFocusLoss(bool value)
   }
 }
 
+/*! \brief Sets up a QPushButton as a launch button given a name and an icon
+ * \param button Button to set up
+ * \param name Application name
+ *  \param icon Application icon
+ */
 void Launcher::setLaunchButton(QPushButton &button,
                                QString &name,
                                QIcon &icon) const
@@ -258,6 +288,11 @@ void Launcher::setLaunchButton(QPushButton &button,
   button.setFixedSize(m_buttonWidth, m_buttonHeight);
 }
 
+/*! \brief Sets up a QPushButton as a launch button given a file path
+ * \param button Button to set up
+ * \param filePath path to the link
+ * \return A Link object
+ */
 Link *Launcher::launchButton(QPushButton &button,
                              const QString &filePath) const
 {
@@ -268,6 +303,10 @@ Link *Launcher::launchButton(QPushButton &button,
   return(lnk);
 }
 
+/*! \brief Focus loss event
+ * \param event
+ * Quits if m_quitIfNoFocus is enabled
+ */
 void Launcher::focusOutEvent(QFocusEvent *event)
 {
   if ((event->reason() != Qt::MouseFocusReason) &&
@@ -279,6 +318,10 @@ void Launcher::focusOutEvent(QFocusEvent *event)
   this->setFocus();
 }
 
+/*! \brief Keyboard event
+ * \param event
+ * Quits when Escape is pressed
+ */
 void Launcher::keyPressEvent (QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Escape)
@@ -287,6 +330,12 @@ void Launcher::keyPressEvent (QKeyEvent *event)
   }
 }
 
+/*!
+ * \brief Maps a position on the button grid to the id of the corresponding button.
+ * \param pos Mouse position
+ * \return id referring to the button selected
+ * \return -1 if none selected
+ */
 int Launcher::getButtonIdFromPos(const QPoint &pos)
 {
   for (int i = 0; i < m_buttons->buttons().count(); i++)
@@ -300,6 +349,10 @@ int Launcher::getButtonIdFromPos(const QPoint &pos)
   return -1;
 }
 
+/*!
+ * \brief Context menu
+ * \param event
+ */
 void Launcher::contextMenuEvent(QContextMenuEvent *event)
 {
   QMenu menu(this);
@@ -353,6 +406,10 @@ void Launcher::contextMenuEvent(QContextMenuEvent *event)
   menu.exec(event->globalPos());
 }
 
+/*!
+ * \brief Opens the folder containing the links parsed by the launcher.
+ * Opens the windows explorer and quits.
+ */
 void Launcher::openLinksFolder()
 {
   QDesktopServices::openUrl(QUrl("file:///" + m_path,
@@ -360,7 +417,9 @@ void Launcher::openLinksFolder()
   this->close();
 }
 
-
+/*!
+ * \brief Shows the statistics dialog.
+ */
 void Launcher::openStatistics()
 {
   allowFocusLoss(true);
@@ -368,6 +427,7 @@ void Launcher::openStatistics()
   this->close();
 }
 
+/*! \brief Shows the settings dialog. */
 void Launcher::openSettings()
 {
   allowFocusLoss(true);
@@ -375,12 +435,19 @@ void Launcher::openSettings()
   this->close();
 }
 
+/*! \brief Opens the folder pointed by a link.
+ * Uses the link selected with the contextual menu.
+ */
 void Launcher::openFileLocation()
 {
+  qDebug() << m_contextMenuButtonId;
   ((Link *)m_links[m_contextMenuButtonId])->openFileLocation();
   this->close();
 }
 
+/*!
+ * \brief Renames a link and modifies the statistics database accordingly.
+ */
 void Launcher::rename()
 {
   allowFocusLoss(true);

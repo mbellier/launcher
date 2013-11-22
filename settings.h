@@ -33,6 +33,12 @@ namespace Ui {
 class Settings;
 }
 
+/*!
+ * \brief Settings window
+ *
+ * Interface to modify the application parameters.
+ *
+ */
 class Settings : public QDialog
 {
   Q_OBJECT
