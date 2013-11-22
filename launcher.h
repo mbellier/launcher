@@ -29,6 +29,7 @@
 #include "statistics.h"
 #include "statistics_dialog.h"
 #include "settings.h"
+#include "launchbutton.hpp"
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
@@ -58,10 +59,11 @@ public:
   int   getTaskbarPosition ();
   void  setPosition        ();
   void  contextMenuEvent   (QContextMenuEvent *event);
-  int   getButtonIdFromPos (const QPoint &pos);
+//  int   getButtonIdFromPos (const QPoint &pos);
   Link *launchButton       (QPushButton &button,
                             const QString &filePath) const;
   void  allowFocusLoss     (bool value);
+  void  openContextMenu    (QContextMenuEvent *event, LaunchButton *button = 0);
 
 public slots:
   void openFileLocation ();
@@ -69,12 +71,12 @@ public slots:
   void openStatistics   ();
   void openSettings     ();
   void rename           ();
-  void click            (int);
+//  void click            (int);
   void focusOutEvent    (QFocusEvent *event);
   void keyPressEvent    (QKeyEvent *event);
 
 private:
-  QButtonGroup *      m_buttons;
+  QButtonGroup        m_buttons;
   QString             m_path;
   bool                m_quitIfNoFocus;
   unsigned int        m_buttonWidth;
@@ -82,8 +84,7 @@ private:
   unsigned int        m_columnSize;
   unsigned int        m_maxColumnSize;
   unsigned int        m_rowSize;
-  int                 m_contextMenuButtonId;
-  std::vector<Link *> m_links;
+  LaunchButton       *m_contextMenuButton;
   QDir *              m_dir;
   Statistics &        m_stats;
   StatisticsDialog &  m_statDialog;

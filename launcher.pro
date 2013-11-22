@@ -15,7 +15,8 @@ SOURCES += main.cpp \
     statistics_dialog.cpp \
     qcustomplot.cpp \
     launcher.cpp \
-    settings.cpp
+    settings.cpp \
+    launchbutton.cpp
 
 HEADERS += \
     statistics.h \
@@ -25,7 +26,8 @@ HEADERS += \
     statistics_dialog.h \
     qcustomplot.h \
     launcher.h \
-    settings.h
+    settings.h \
+    launchbutton.hpp
 
 RESOURCES += \
     txt.qrc

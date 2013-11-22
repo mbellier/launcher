@@ -34,6 +34,7 @@
 
 #include "launcher.h"
 #include "statistics_dialog.h"
+#include "launchbutton.hpp"
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDesktopWidget>
@@ -67,10 +68,17 @@ typedef struct {
  * \param b Button
  * \return A boolean set to True if button 'a' stats are greater than 'b'.
  */
-static bool sortButtonsFunc(const ButtonStats &a,
-                            const ButtonStats &b){
-  return a.stats > b.stats;
+static bool sortButtonsFunc(const LaunchButton *a,
+                            const LaunchButton *b){
+  if (!a || !b)
+    return false;
+  if (a->getNbLaunched() == b->getNbLaunched())
+    return a->text().compare(b->text()) < 0;
+  return a->getNbLaunched() > b->getNbLaunched();
 }
+
+
+
 
 /*! \brief Launcher contructor
  * \param stats A Statistics object
@@ -81,9 +89,10 @@ Launcher::Launcher(Statistics &stats,
                    StatisticsDialog &statDialog,
                    Settings &settings)
   : QWidget(),
+    m_buttons (this),
     m_buttonWidth(150),
     m_buttonHeight(60),
-    m_contextMenuButtonId(-1),
+    m_contextMenuButton(NULL),
     m_stats(stats),
     m_statDialog(statDialog),
     m_settings(settings)
@@ -91,10 +100,7 @@ Launcher::Launcher(Statistics &stats,
   m_maxColumnSize = m_settings.settingMaxColumnSize();
   m_path = QCoreApplication::applicationDirPath().append("/links/");
 
-  m_buttons = new QButtonGroup(this);
-  QObject::connect(m_buttons, SIGNAL(buttonClicked(int)),
-                   this, SLOT(click(int)));
-
+  // opening links folder
   QStringList filters;
   filters << "*.lnk" << "*.url";
   m_dir = new QDir(m_path);
@@ -107,50 +113,38 @@ Launcher::Launcher(Statistics &stats,
     openLinksFolder();
   }
 
-  vector<ButtonStats> button_stats;
+  // creation of the buttons
+  LaunchButtonFactory buttonFactory( this, m_buttonWidth, m_buttonHeight, stats);
+  QList <LaunchButton *> buttonList;
   for (unsigned int k = 0; k < m_dir->count(); k++)
   {
-    QPushButton *button = new QPushButton(this);
-    QString s = m_path + m_dir->entryList()[k];
-
-    Link *lnk = launchButton(*button, s);
-    if (!lnk)
+    QString path = m_path + m_dir->entryList()[k];
+    LaunchButton *button = buttonFactory.newLaunchButton(path);
+    if (!button)
     {
-      qDebug() << "[Error] Link unsupported: " << s;
-      button->close();
-      delete button;
+      qDebug() << "[Error] Link unsupported: " << path;
       continue;
     }
 
-    m_buttons->addButton(button,k);
-    m_links.push_back(lnk);
-
-    ButtonStats bstats;
-    bstats.button = k;
-    bstats.stats= stats.nbTokens(button->text().toStdString());
-    button_stats.push_back(bstats);
+    buttonList.append(button);
   }
 
-  // button sorting
+  // sort buttons
   if (m_settings.settingSorted()){
-    sort(button_stats.begin(), button_stats.end(), sortButtonsFunc);
-    // TODO This is a quick fix - better make a class for launchButtons !
-    std::vector<Link *> tmp;
-    for (unsigned int k = 0; k < m_links.size(); k++){
-      unsigned int sorted_index = button_stats[k].button;
-      tmp.push_back(m_links[sorted_index]);
-    }
-    m_links = tmp;
+    qSort(buttonList.begin(), buttonList.end(), sortButtonsFunc);
   }
+
 
   // position buttons
-  unsigned int i = 0, j = 0;
   m_columnSize = 0;
-  for (int k = 0; k < m_buttons->buttons().count(); k++)
+  unsigned int i = 0, j = 0;
+  for (int k = 0; k < buttonList.count(); k++)
   {
-    unsigned int sorted_index = button_stats[k].button;
-    m_buttons->button(sorted_index)->move(m_buttonWidth * j,
-                                          m_buttonHeight * i);
+    // add button to the grid
+    m_buttons.addButton(buttonList.at(k), k);
+
+    m_buttons.button(k)->move(m_buttonWidth * j,
+                              m_buttonHeight * i);
     i++;
     m_columnSize = (i > m_columnSize) ? i : m_columnSize;
     if (i >= m_maxColumnSize)
@@ -159,12 +153,14 @@ Launcher::Launcher(Statistics &stats,
       j++;
     }
   }
-  m_rowSize = (m_buttons->buttons().count() - 1) / (m_maxColumnSize) + 1;
+  m_rowSize = (m_buttons.buttons().count() - 1) / (m_maxColumnSize) + 1;
+
+
 
   // Window parameters
   setPosition();
   setWindowFlags( Qt::CustomizeWindowHint ); // no title bar
-  if (m_buttons->buttons().count() > 0)
+  if (m_buttons.buttons().count() > 0)
     setFixedSize(m_rowSize * m_buttonWidth,
                  m_columnSize * m_buttonHeight); // fixed size
   setFocusPolicy(Qt::StrongFocus);
@@ -177,7 +173,8 @@ Launcher::Launcher(Statistics &stats,
  */
 Launcher::~Launcher()
 {
-   m_stats.save();
+  // NB: No need to free the buttons manually as they have a parent
+  m_stats.save();
 }
 
 /*! \brief Returns the position of the windows taskbar.
@@ -249,16 +246,6 @@ void Launcher::setPosition()
   this->move(px, py);
 }
 
-/*! \brief Button click event
- * \param id Refers to the clicked button
- */
-void Launcher::click(int id)
-{
-  m_stats.addToken(m_buttons->button(id)->text().toStdString());
-  m_buttons->button(id)->setText("Launching...");
-  ((Link *)m_links[id])->launch();
-  this->close();
-}
 
 /*! \brief Used to (dis)allow focus loss of the launcher window
  * \param value
@@ -272,36 +259,7 @@ void Launcher::allowFocusLoss(bool value)
   }
 }
 
-/*! \brief Sets up a QPushButton as a launch button given a name and an icon
- * \param button Button to set up
- * \param name Application name
- *  \param icon Application icon
- */
-void Launcher::setLaunchButton(QPushButton &button,
-                               QString &name,
-                               QIcon &icon) const
-{
-  button.setStyleSheet("text-align:left");
-  button.setIcon(icon);
-  button.setIconSize(QSize(32,32));
-  button.setText(name);
-  button.setFixedSize(m_buttonWidth, m_buttonHeight);
-}
 
-/*! \brief Sets up a QPushButton as a launch button given a file path
- * \param button Button to set up
- * \param filePath path to the link
- * \return A Link object
- */
-Link *Launcher::launchButton(QPushButton &button,
-                             const QString &filePath) const
-{
-  QIcon icon;
-  Link *lnk = Link::loadLink(filePath, icon);
-  if (lnk == NULL) return NULL;
-  setLaunchButton(button, lnk->linkName(), icon);
-  return(lnk);
-}
 
 /*! \brief Focus loss event
  * \param event
@@ -330,39 +288,27 @@ void Launcher::keyPressEvent (QKeyEvent *event)
   }
 }
 
-/*!
- * \brief Maps a position on the button grid to the id of the corresponding button.
- * \param pos Mouse position
- * \return id referring to the button selected
- * \return -1 if none selected
- */
-int Launcher::getButtonIdFromPos(const QPoint &pos)
+
+void Launcher::contextMenuEvent(QContextMenuEvent *event)
 {
-  for (int i = 0; i < m_buttons->buttons().count(); i++)
-  {
-    QAbstractButton *b = (m_buttons->button(i));
-    if ((abs(b->x() - pos.x()) < b->width()) &&
-        (abs(b->y() - pos.y()) < b->height())){
-      return i;
-    }
-  }
-  return -1;
+  openContextMenu(event);
 }
 
 /*!
  * \brief Context menu
  * \param event
  */
-void Launcher::contextMenuEvent(QContextMenuEvent *event)
+void Launcher::openContextMenu(QContextMenuEvent *event, LaunchButton *button)
 {
   QMenu menu(this);
-  m_contextMenuButtonId = getButtonIdFromPos(event->pos());
+
+  m_contextMenuButton = button;
 
   // if clicking on a button :
-  if (m_contextMenuButtonId >= 0){
+  if (button){
     // (1) Menu : Open file location
     QAction *actionFileLocation = menu.addAction("Open &file location");
-    if (((Link *) m_links[m_contextMenuButtonId])->isUrl())
+    if (button->link().isUrl())
       actionFileLocation->setEnabled(false);
     connect(actionFileLocation, SIGNAL(triggered()),
             this, SLOT(openFileLocation()));
@@ -376,9 +322,7 @@ void Launcher::contextMenuEvent(QContextMenuEvent *event)
     menu.addSeparator();
 
     // (4) Menu : nb launched
-    int nbLaunched = m_stats.nbTokens(m_buttons->
-                                      button(m_contextMenuButtonId)->
-                                      text().toStdString());
+    int nbLaunched = button->getNbLaunched();
     QString stat;
     stat = "Launched " + QString::number(nbLaunched) + " time";
     if (nbLaunched > 1) stat += "s";
@@ -440,8 +384,8 @@ void Launcher::openSettings()
  */
 void Launcher::openFileLocation()
 {
-  qDebug() << m_contextMenuButtonId;
-  ((Link *)m_links[m_contextMenuButtonId])->openFileLocation();
+  if (m_contextMenuButton)
+  m_contextMenuButton->link().openFileLocation();
   this->close();
 }
 
@@ -450,22 +394,25 @@ void Launcher::openFileLocation()
  */
 void Launcher::rename()
 {
+  if (!m_contextMenuButton)
+    return;
+
   allowFocusLoss(true);
 
   bool okButton;
-  Link *lnk = ((Link *)m_links[m_contextMenuButtonId]);
+  Link &lnk =  m_contextMenuButton->link();
   QString text = QInputDialog::getText(this, tr("Rename"),
                                        tr("New name :"),
                                        QLineEdit::Normal,
-                                       lnk->linkName(),
+                                       lnk.linkName(),
                                        &okButton);
   if (okButton && !text.isEmpty())
   {
-    m_stats.renameElement(lnk->linkName().toStdString(),
+    m_stats.renameElement(lnk.linkName().toStdString(),
                           text.toStdString());
     m_stats.save();
-    lnk->renameLink(text);
-    m_buttons->button(m_contextMenuButtonId)->setText(text);
+    lnk.renameLink(text);
+    m_contextMenuButton->setText(text);
   }
 
   allowFocusLoss(false);
