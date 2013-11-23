@@ -44,23 +44,31 @@ class Settings : public QDialog
   Q_OBJECT
   
 public:
-  Settings(const QString &settingsFile,
-           QWidget *parent = 0);
+  Settings(const QString &settingsFile, QWidget *parent = 0);
   ~Settings();
-  void loadSettings();
-  void saveSettings();
-  bool settingSorted() const;
+  void         loadSettings();
+  void         saveSettings();
+  bool         settingSorted() const;
   unsigned int settingMaxColumnSize() const;
+  unsigned int settingButtonWidth() const;
+  unsigned int settingButtonHeight() const;
+  bool         settingflatButtons() const;
 
 private slots:
+  void on_checkFlat_toggled(bool checked);
   void on_optionSortedTrue_toggled(bool checked);
   void on_sliderWidth_valueChanged(int value);
+  void on_sliderButtonWidth_valueChanged(int value);
+  void on_sliderButtonHeight_valueChanged(int value);
 
 private:
   Ui::Settings *ui;
-  QString m_settingsFile;
-  bool m_settingSorted;
-  unsigned int m_settingMaxColumnSize;
+  QString       m_settingsFile;
+  bool          m_settingSorted;
+  unsigned int  m_settingMaxColumnSize;
+  unsigned int  m_settingButtonWidth;
+  unsigned int  m_settingButtonHeight;
+  bool          m_settingFlatButtons;
 };
 
 #endif // SETTINGS_H

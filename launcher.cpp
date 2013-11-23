@@ -90,8 +90,6 @@ Launcher::Launcher(Statistics &stats,
                    Settings &settings)
   : QWidget(),
     m_buttons (this),
-    m_buttonWidth(150),
-    m_buttonHeight(60),
     m_contextMenuButton(NULL),
     m_stats(stats),
     m_statDialog(statDialog),
@@ -114,7 +112,7 @@ Launcher::Launcher(Statistics &stats,
   }
 
   // creation of the buttons
-  LaunchButtonFactory buttonFactory( this, m_buttonWidth, m_buttonHeight, stats);
+  LaunchButtonFactory buttonFactory( this, settings, stats);
   QList <LaunchButton *> buttonList;
   for (unsigned int k = 0; k < m_dir->count(); k++)
   {
@@ -143,8 +141,8 @@ Launcher::Launcher(Statistics &stats,
     // add button to the grid
     m_buttons.addButton(buttonList.at(k), k);
 
-    m_buttons.button(k)->move(m_buttonWidth * j,
-                              m_buttonHeight * i);
+    m_buttons.button(k)->move(settings.settingButtonWidth()  * j,
+                              settings.settingButtonHeight() * i);
     i++;
     m_columnSize = (i > m_columnSize) ? i : m_columnSize;
     if (i >= m_maxColumnSize)
@@ -161,8 +159,8 @@ Launcher::Launcher(Statistics &stats,
   setPosition();
   setWindowFlags( Qt::CustomizeWindowHint ); // no title bar
   if (m_buttons.buttons().count() > 0)
-    setFixedSize(m_rowSize * m_buttonWidth,
-                 m_columnSize * m_buttonHeight); // fixed size
+    setFixedSize(m_rowSize * settings.settingButtonWidth(),
+                 m_columnSize * settings.settingButtonHeight()); // fixed size
   setFocusPolicy(Qt::StrongFocus);
   setFocus();
   allowFocusLoss(false);
@@ -212,12 +210,12 @@ void Launcher::setPosition()
   case 0:
   case 2:
     px = QCursor::pos().x();
-    px -= m_buttonWidth / 2 - 14;
+    px -= m_settings.settingButtonWidth() / 2 - 14;
     if (px < 0) px = 0;
     break;
   case 3:
     px  = qApp->desktop()->availableGeometry().topRight().x();
-    px -= m_rowSize * m_buttonWidth;
+    px -= m_rowSize * m_settings.settingButtonWidth();
     px -= 12; // window's border
     break;
   case 1:
@@ -230,12 +228,12 @@ void Launcher::setPosition()
   case 1:
   case 3:
     py  = QCursor::pos().y();
-    py -= m_buttonHeight / 2;
+    py -= m_settings.settingButtonHeight() / 2;
     if (py < 0) py = 0;
     break;
   case 0:
     py  = qApp->desktop()->availableGeometry().bottomLeft().y();
-    py -= m_buttonHeight * m_columnSize;
+    py -= m_settings.settingButtonHeight() * m_columnSize;
     py -= 14; // window's border
     break;
   case 2:
@@ -320,6 +318,9 @@ void Launcher::openContextMenu(QContextMenuEvent *event, LaunchButton *button)
 
     // (3) Separator
     menu.addSeparator();
+
+    // (3b) Text
+    menu.addAction(button->text())->setDisabled(true);
 
     // (4) Menu : nb launched
     int nbLaunched = button->getNbLaunched();
@@ -412,7 +413,7 @@ void Launcher::rename()
                           text.toStdString());
     m_stats.save();
     lnk.renameLink(text);
-    m_contextMenuButton->setText(text);
+    m_contextMenuButton->updateText(text);
   }
 
   allowFocusLoss(false);

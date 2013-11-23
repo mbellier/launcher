@@ -59,7 +59,6 @@ public:
   int   getTaskbarPosition ();
   void  setPosition        ();
   void  contextMenuEvent   (QContextMenuEvent *event);
-//  int   getButtonIdFromPos (const QPoint &pos);
   Link *launchButton       (QPushButton &button,
                             const QString &filePath) const;
   void  allowFocusLoss     (bool value);
@@ -71,7 +70,6 @@ public slots:
   void openStatistics   ();
   void openSettings     ();
   void rename           ();
-//  void click            (int);
   void focusOutEvent    (QFocusEvent *event);
   void keyPressEvent    (QKeyEvent *event);
 
@@ -79,8 +77,6 @@ private:
   QButtonGroup        m_buttons;
   QString             m_path;
   bool                m_quitIfNoFocus;
-  unsigned int        m_buttonWidth;
-  unsigned int        m_buttonHeight;
   unsigned int        m_columnSize;
   unsigned int        m_maxColumnSize;
   unsigned int        m_rowSize;

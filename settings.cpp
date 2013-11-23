@@ -54,14 +54,23 @@ Settings::~Settings()
 void Settings::loadSettings()
 {
   QSettings settings(m_settingsFile,QSettings::IniFormat);
-  m_settingSorted = settings.value("sorted", false).toBool();
+  m_settingSorted        = settings.value("sorted", false).toBool();
   m_settingMaxColumnSize = settings.value("maxColumnSize", 8).toUInt();
+  m_settingFlatButtons   = settings.value("flat", false).toBool();
+  m_settingButtonWidth   = settings.value("width", 150).toUInt();
+  m_settingButtonHeight  = settings.value("height", 50).toUInt();
 
   // update ui
   if (ui->optionSortedTrue && m_settingSorted)
     ui->optionSortedTrue->toggle();
   if (ui->sliderWidth)
     ui->sliderWidth->setValue(m_settingMaxColumnSize);
+  if (ui->sliderButtonWidth)
+    ui->sliderButtonWidth->setValue(m_settingButtonWidth);
+  if (ui->sliderButtonHeight)
+    ui->sliderButtonHeight->setValue(m_settingButtonHeight);
+  if (ui->checkFlat && m_settingFlatButtons)
+    ui->checkFlat->toggle();
 }
 
 void Settings::saveSettings()
@@ -69,6 +78,9 @@ void Settings::saveSettings()
   QSettings settings(m_settingsFile,QSettings::IniFormat);
   settings.setValue("sorted", m_settingSorted);
   settings.setValue("maxColumnSize", m_settingMaxColumnSize);
+  settings.setValue("flat", m_settingFlatButtons);
+  settings.setValue("width", m_settingButtonWidth);
+  settings.setValue("height", m_settingButtonHeight);
 }
 
 bool Settings::settingSorted() const
@@ -81,15 +93,51 @@ unsigned int Settings::settingMaxColumnSize() const
   return m_settingMaxColumnSize;
 }
 
+bool Settings::settingflatButtons() const
+{
+  return m_settingFlatButtons;
+}
+
 
 void Settings::on_optionSortedTrue_toggled(bool checked)
 {
   m_settingSorted = checked;
 }
 
+unsigned int Settings::settingButtonWidth() const
+{
+  return m_settingButtonWidth;
+}
+
+
+unsigned int Settings::settingButtonHeight() const
+{
+  return m_settingButtonHeight;
+}
+
+
 void Settings::on_sliderWidth_valueChanged(int value)
 {
   m_settingMaxColumnSize = value;
   if (ui->labelWidth)
     ui->labelWidth->setText(QString::number(m_settingMaxColumnSize));
+}
+
+void Settings::on_sliderButtonWidth_valueChanged(int value)
+{
+  m_settingButtonWidth = value;
+  if (ui->labelButtonWidth)
+    ui->labelButtonWidth->setText(QString::number(m_settingButtonWidth));
+}
+
+void Settings::on_sliderButtonHeight_valueChanged(int value)
+{
+  m_settingButtonHeight = value;
+  if (ui->labelButtonHeight)
+    ui->labelButtonHeight->setText(QString::number(m_settingButtonHeight));
+}
+
+void Settings::on_checkFlat_toggled(bool checked)
+{
+  m_settingFlatButtons = checked;
 }
