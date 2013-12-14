@@ -1,5 +1,6 @@
 QT += core gui widgets printsupport
 
+
 # Add more folders to ship with the application, here
 DEPLOYMENTFOLDERS = folder_01
 

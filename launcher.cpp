@@ -203,7 +203,7 @@ int Launcher::getTaskbarPosition()
 void Launcher::setPosition()
 {
   int taskbarPosition = getTaskbarPosition();
-  int px, py;
+  int px = 0, py = 0;
 
   switch (taskbarPosition)
   {

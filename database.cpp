@@ -65,7 +65,7 @@ Element &Database::element(const std::string &element_name){
 bool Database::open(const std::string &file_path){
   string line1, line2, line;
 
-  ifstream myfile (file_path);
+  ifstream myfile (file_path.c_str());
   if (!myfile.is_open()) {
     return false;
   }
@@ -91,7 +91,7 @@ bool Database::open(const std::string &file_path){
 }
 
 bool Database::save(const std::string &file_path) const{
-  ofstream myfile (file_path);
+  ofstream myfile (file_path.c_str());
   if (!myfile.is_open()) {
     return false;
   }

@@ -60,7 +60,7 @@ std::string Element::data(const unsigned int &index) const{
 }
 
 bool Element::data(const unsigned int &index, const string &value){
-    if (index >= 0 && index < m_data.size()){
+    if (index < m_data.size()){
         m_data[index] = value;
         return true;
     }

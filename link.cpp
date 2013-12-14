@@ -58,8 +58,8 @@ Link::Link(const QString &link_name,
            const QString &link_dir,
            const QString &dirPath,
            const QString &file_name) :
-    m_dirPath(dirPath),
     m_fileName(file_name),
+    m_dirPath(dirPath),
     m_linkName(link_name),
     m_linkDir(link_dir),
     m_isUrl(false)
